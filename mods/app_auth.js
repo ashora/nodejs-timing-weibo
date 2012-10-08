@@ -1,7 +1,7 @@
 var config=require("./config.js").get();
 var util=require("./util.js");
 var sql=require("./sql.js");
-var wb = require('../lib/weibo-v2.js').WeiboApi;
+var wb = require('weibov2').WeiboApi;
 var opts = {
     app_key       :  config.weibo_key ,
     app_secret    :  config.weibo_secret ,

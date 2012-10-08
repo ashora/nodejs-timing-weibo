@@ -1,11 +1,11 @@
 
 var config=require("./config.js").get();
 var util=require("./util.js")
-var readOF=require("../lib/readOF.js")
+var readOF=require("readof")
 var do_pic=require("./do_pic.js")
 var sql=require("./sql.js")
 var http=require("http")
-var wb = require('../lib/weibo-v2.js').WeiboApi;
+var wb = require('weibov2').WeiboApi;
 exports.zhua=function(_config,callback){
     var self_config={
         url:"",

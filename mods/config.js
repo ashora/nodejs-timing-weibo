@@ -11,7 +11,7 @@ var config={
     "cookie_expire_time":604800000,
     "table_user":"wb_id",
     "table_queue":"wb_queue",
-    "host":"wbtool.xiangqu.com"
+    "host":"wbtool.**.com"
 }
 exports.get=function(){
     return config;

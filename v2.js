@@ -1,7 +1,7 @@
 //import some libs
 var express = require('express');
 var cons = require('consolidate');
-var wb = require('./lib/weibo-v2.js').WeiboApi;
+var wb = require('weibov2').WeiboApi;
 
 var config=require("./mods/config.js").get();
 var util=require("./mods/util.js");

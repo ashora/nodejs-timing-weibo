@@ -6,7 +6,7 @@ var do_pic=require("./do_pic.js")
 var zhua=require("./zhua.js")
 
 
-var url_reg=/^http:\/\/(www.xiangqu.com)(\/detail\?id=.*)$/
+var url_reg=/^http:\/\/(www.***.com)(\/detail\?id=.*)$/
 var pic_reg=/<div id="bdshare" class=".*?" data="{'text':'.*?', 'pic':'(.*?)' ,/
 var content_reg=/<div id="bdshare" class=".*?" data="{'text':'(.*?)', 'pic':'.*?' ,/
 

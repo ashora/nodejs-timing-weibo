@@ -1,4 +1,4 @@
-var wb = require('./lib/weibo-v2.js').WeiboApi;
+var wb = require('weibov2').WeiboApi;
 var config=require("./mods/config.js").get();
 var util=require("./mods/util.js");
 var Client = require('mysql').Client;
@@ -43,9 +43,22 @@ var sendWB=function(data){
                     access_token:token,
                     status:data.content
                 },data.pic,function(_d){
-                    util.log_process("update weibo success:"+JSON.stringify(data))
+                    try{
+                          if(_d.error){
+                        util.log_process("update weibo failed:"+JSON.stringify(_d))
+                        clientCommon.query('update wb_queue  set wb_failreason=\''+JSON.stringify(_d)+'\' where id='+data.id)
+                        return;
+                    }
+                    }catch(e){
+                        util.log_process("updating error:"+JSON.stringify(e))
+                    }
+                    util.log_process("update weibo success:"+JSON.stringify(_d))
+                    clientCommon.query(  
+                        'DELETE FROM  '+config.table_queue+  
+                        ' WHERE id='+data.id);
+                    util.log_process("delete "+data.id)
                     fs.unlink(data.pic, function() {
-                       util.log_process("delete pic:"+data.pic)
+                        util.log_process("delete pic:"+data.pic)
                     })
                 })
             }else{
@@ -53,7 +66,21 @@ var sendWB=function(data){
                     access_token:token,
                     status:data.content
                 },function(_d){
-                   util.log_process("update weibo success:"+JSON.stringify(data))
+                    try{
+                          if(_d.error){
+                        util.log_process("update weibo failed:"+JSON.stringify(_d))
+                        clientCommon.query('update wb_queue  set wb_failreason=\''+JSON.stringify(_d)+'\' where id='+data.id)
+                        return;
+                    }
+                    }catch(e){
+                        util.log_process("updating error:"+JSON.stringify(e))
+                    }
+                  
+                    util.log_process("update weibo success:"+JSON.stringify(_d))
+                    clientCommon.query(  
+                        'DELETE FROM  '+config.table_queue+  
+                        ' WHERE id='+data.id);
+                    util.log_process("delete "+data.id)
                 })
             }
         })
@@ -65,19 +92,16 @@ setInterval(function(){
     // console.log(sendQueue.length)
     if(sendQueue.length!=0){
         var send=sendQueue.shift();
-       
+       clientCommon.query('update wb_queue  set wb_failed=1 where id='+send.id)
         sendWB(send)
-        clientCommon.query(  
-            'DELETE FROM  '+config.table_queue+  
-            ' WHERE id='+send.id);
-        util.log_process("delete "+JSON.stringify(send))
+        
     } 
 },20000);
 //检查数据库中的所有消息的发送时间与当前时间的差，如果发现到了发送时间，则送到发送队列中等待发送。
 
 setInterval(function(){
     clientCommon.query(  
-        'SELECT * FROM '+config.table_queue+'  ORDER BY send_time',  
+        'SELECT * FROM '+config.table_queue+'  WHERE wb_failed=0 ORDER BY send_time',  
         function selectCb(err, results, fields) {  
             if (err) return console.log(err);
             var needSend=[] //需要发送的微博的数据
@@ -104,37 +128,36 @@ setInterval(function(){
         });
 },5000)
 
-
-var nodemailer = require("nodemailer");
-
-// create reusable transport method (opens pool of SMTP connections)
-var smtpTransport = nodemailer.createTransport("SMTP",{
-    host: "smtp.qq.com", // hostname
-    secureConnection: true, // use SSL
-    port: 465, // port for secure SMTP
-    auth: {
-        user: "676588498",
-        pass: "*"
-    }
-});
-process.on('uncaughtException', function (error) {
-  
-// setup e-mail data with unicode symbols
-var mailOptions = {
-    from: "676588498@qq.com", // sender address
-    to: "sunxinyu@tianpin.com", // list of receivers
-    subject: "nodejs error", // Subject line
-    text: ""+error // plaintext body
-}
-
-// send mail with defined transport object
-smtpTransport.sendMail(mailOptions, function(error, response){
-    if(error){
-        console.log(error);
-    }else{
-        console.log("Message sent: " + response.message);
-    }
-    // if you don't want to use this transport object anymore, uncomment following line
-    //smtpTransport.close(); // shut down the connection pool, no more messages
-});
-});
+//
+//var nodemailer = require("nodemailer");
+//
+//// create reusable transport method (opens pool of SMTP connections)
+//var smtpTransport = nodemailer.createTransport("SMTP",{
+//    host: "smtp.qq.com", // hostname
+//    secureConnection: true, // use SSL
+//    port: 465, // port for secure SMTP
+//    auth: {
+//        user: "676588498",
+//        pass: "xinyu_198736"
+//    }
+//});
+//process.on('uncaughtException', function (error) {
+//  
+//    // setup e-mail data with unicode symbols
+//    var mailOptions = {
+//        from: "676588498@qq.com", // sender address
+//        to: "sunxinyu@tianpin.com", // list of receivers
+//        subject: "nodejs error", // Subject line
+//        text: ""+error // plaintext body
+//    }
+//console.log(error)
+//    // send mail with defined transport object
+//    smtpTransport.sendMail(mailOptions, function(error, response){
+//        if(error){
+//            console.log(error);
+//        }else{
+//            console.log("Message sent: " + response.message);
+//        }
+//    smtpTransport.close(); // shut down the connection pool, no more messages
+//    });
+//});
